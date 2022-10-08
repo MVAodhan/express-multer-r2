@@ -56,6 +56,7 @@ var corsOptions = {
 };
 const app = express();
 app.use(cors(corsOptions));
+
 //single file upload
 // app.post('/upload', upload.single('file'), (req, res) => {
 //   res.json({ status: 'success' });
@@ -119,20 +120,23 @@ app.get('/', async (req, res) => {
   });
 });
 
-app.post('/upload', upload.single('file'), async (req, res) => {
-  const transformedBuffer = await sharp(req.file.buffer)
-    .resize(1080, 1920, { fit: 'contain' })
-    .toBuffer();
-  const params = {
-    Bucket: bucketName,
-    Key: randomImageName(req.file.originalname),
-    Body: transformedBuffer,
-    ContentType: req.file.mimetype,
-  };
-  const command = new PutObjectCommand(params);
-  await s3.send(command);
-
-  res.json({ message: 'success' });
+app.post('/upload', upload.single('image'), async (req, res) => {
+  const file = req.file;
+  const caption = req.body.caption;
+  console.log(file);
+  console.log(caption);
+  // const transformedBuffer = await sharp(req.file.buffer)
+  //   .resize(1080, 1920, { fit: 'contain' })
+  //   .toBuffer();
+  // const params = {
+  //   Bucket: bucketName,
+  //   Key: randomImageName(req.file.originalname),
+  //   Body: transformedBuffer,
+  //   ContentType: req.file.mimetype,
+  // };
+  // const command = new PutObjectCommand(params);
+  // await s3.send(command);
+  // res.json({ message: 'success' });
 });
 
 app.use((err, req, res, next) => {
