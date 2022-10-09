@@ -35,7 +35,7 @@ const randomImageName = (origionalname) => {
 };
 
 const corsOptions = {
-  origin: 'http://localhost:3001',
+  origin: 'http://localhost:3000',
 };
 const app = express();
 app.use(cors(corsOptions));
