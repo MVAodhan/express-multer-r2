@@ -57,7 +57,7 @@ const upload = multer({
 });
 const getSignedObject = async (key) => {
   const getObjectParams = {
-    Bucket: bucketName,
+    Bucket: 'test-bucket',
     Key: key,
   };
   const command = new GetObjectCommand(getObjectParams);
@@ -81,7 +81,7 @@ app.post('/upload', upload.single('image'), async (req, res) => {
     .resize(1080, 1920, { fit: 'contain' })
     .toBuffer();
   const params = {
-    Bucket: bucketName,
+    Bucket: 'test-bucket',
     Key: imageName,
     Body: fileBuffer,
     ContentType: file.mimetype,
