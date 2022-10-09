@@ -19,7 +19,7 @@ const bucketName = process.env.CLOUDFLARE_BUCKET_NAME;
 const cloudflareEndpoint = process.env.CLOUDFLARE_API_ENDPOINT;
 const cloudflareAccessKey = process.env.CLOUDFLARE_ACCESS_KEY;
 const cloudflareSecretKey = process.env.CLOUDFLARE_SECRET_KEY;
-
+const port = process.env.PORT;
 // connecting to cloudflare r2 with s3 sdk
 const s3 = new S3Client({
   region: 'auto',
@@ -35,7 +35,7 @@ const randomImageName = (origionalname) => {
 };
 
 const corsOptions = {
-  origin: 'http://localhost:3000',
+  origin: 'http://localhost:3001',
 };
 const app = express();
 app.use(cors(corsOptions));
@@ -57,7 +57,7 @@ const upload = multer({
 });
 const getSignedObject = async (key) => {
   const getObjectParams = {
-    Bucket: 'test-bucket',
+    Bucket: bucketName,
     Key: key,
   };
   const command = new GetObjectCommand(getObjectParams);
@@ -81,7 +81,7 @@ app.post('/upload', upload.single('image'), async (req, res) => {
     .resize(1080, 1920, { fit: 'contain' })
     .toBuffer();
   const params = {
-    Bucket: 'test-bucket',
+    Bucket: bucketName,
     Key: imageName,
     Body: fileBuffer,
     ContentType: file.mimetype,
@@ -119,6 +119,6 @@ app.use((err, req, res, next) => {
   }
 });
 
-app.listen(3000, () => {
-  console.log('app listening on port 3000');
+app.listen(port, () => {
+  console.log(`app listening on port ${port}`);
 });
