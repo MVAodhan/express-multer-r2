@@ -119,6 +119,6 @@ app.use((err, req, res, next) => {
   }
 });
 
-app.listen(8888, () => {
-  console.log('app listening on port 8888');
+app.listen(3000, () => {
+  console.log('app listening on port 3000');
 });
