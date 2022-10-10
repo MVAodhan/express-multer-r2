@@ -10,6 +10,7 @@ const {
   S3Client,
   PutObjectCommand,
   GetObjectCommand,
+  DeleteObjectCommand,
 } = require('@aws-sdk/client-s3');
 const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
 const uuid = require('uuid').v4;
@@ -35,7 +36,7 @@ const randomImageName = (origionalname) => {
 };
 
 const corsOptions = {
-  origin: 'http://localhost:3000',
+  origin: ['http://localhost:3000', 'http://localhost:3001'],
 };
 const app = express();
 app.use(cors(corsOptions));
@@ -99,6 +100,29 @@ app.post('/upload', upload.single('image'), async (req, res) => {
   res.json({ message: 'success' });
 });
 
+app.delete('/deletePost/:id', async (req, res) => {
+  let { id } = req.params;
+  id = parseInt(id);
+
+  const post = await prisma.posts.findUnique({
+    where: {
+      id: id,
+    },
+  });
+
+  const params = {
+    Bucket: bucketName,
+    Key: post.imageName,
+  };
+
+  await s3.send(new DeleteObjectCommand(params));
+
+  await prisma.posts.delete({
+    where: {
+      id: id,
+    },
+  });
+});
 app.use((err, req, res, next) => {
   if (err instanceof multer.MulterError) {
     if (err.code === 'LIMIT_FILE_SIZE') {
