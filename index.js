@@ -2,6 +2,7 @@ const express = require('express');
 const multer = require('multer');
 require('dotenv').config();
 const cors = require('cors');
+const fetch = require('node-fetch');
 
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
@@ -40,6 +41,7 @@ const corsOptions = {
 };
 const app = express();
 app.use(cors(corsOptions));
+app.use(express.json());
 
 // Store file in memory to transform and validate before sending to S3
 const storage = multer.memoryStorage();
@@ -62,7 +64,7 @@ const getSignedObject = async (key) => {
     Key: key,
   };
   const command = new GetObjectCommand(getObjectParams);
-  const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
+  const url = await getSignedUrl(s3, command, { expiresIn: 360000 });
   return url;
 };
 
@@ -72,6 +74,21 @@ app.get('/', async (req, res) => {
     post.imageName = await getSignedObject(post.imageName);
   }
   res.send(posts);
+});
+
+app.post('/download', async (req, res) => {
+  const { url } = req.body;
+  const response = await fetch(url).then((res) => res.arrayBuffer());
+  const imageBuffer = Buffer.from(response);
+  res.send({
+    statusCode: 200,
+    headers: {
+      'Content-Type': 'image/jpeg',
+      'Content-Disposition': `filename="aodhan-r2.jpg"`,
+    },
+    body: imageBuffer.toString('base64'),
+    isBase64Encoded: true,
+  });
 });
 
 app.post('/upload', upload.single('image'), async (req, res) => {
@@ -90,7 +107,7 @@ app.post('/upload', upload.single('image'), async (req, res) => {
   const command = new PutObjectCommand(params);
   await s3.send(command);
 
-  const post = await prisma.posts.create({
+  await prisma.posts.create({
     data: {
       imageName,
       caption,
